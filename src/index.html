@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MiniMax Studio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>🎨 MiniMax Studio</h1>
+      <span class="subtitle">AI 文本 · 图片 · 语音 · 音乐</span>
+      <button class="settings-btn" onclick="toggleSettings()" title="设置">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display:none">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>设置</h2>
+          <button class="close-btn" onclick="toggleSettings()">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <label>API Key</label>
+        <input type="password" id="setting-api-key" placeholder="sk-cp-..." />
+        <span class="hint">留空则使用 mmx 已配置的 Key</span>
+        <label>API 地址</label>
+        <input type="text" id="setting-api-host" value="https://api.minimaxi.com" />
+        <label>默认模型</label>
+        <select id="setting-model">
+          <option value="MiniMax-M2.7">MiniMax-M2.7</option>
+          <option value="MiniMax-M2.7-highspeed">MiniMax-M2.7-highspeed</option>
+          <option value="MiniMax-M2.5">MiniMax-M2.5</option>
+        </select>
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button class="btn-primary" onclick="saveSettings()" style="flex:1">保存</button>
+          <button class="btn-secondary" onclick="toggleSettings()">取消</button>
+        </div>
+        <p id="settings-msg" class="hint" style="margin-top:10px;text-align:center"></p>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="text">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h16"/></svg>文本
+      </button>
+      <button class="tab" data-tab="image">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>图片
+      </button>
+      <button class="tab" data-tab="vision">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>理解
+      </button>
+      <button class="tab" data-tab="speech">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>语音
+      </button>
+      <button class="tab" data-tab="music">
+        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>音乐
+      </button>
+      <button class="tab" data-tab="tasks">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>任务
+      </button>
+      <button class="tab" data-tab="gallery">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>画廊
+      </button>
+    </nav>
+
+    <main>
+      <!-- Text -->
+      <section id="tab-text" class="tab-content active">
+        <div class="card">
+          <label>系统提示词 <span class="hint">(可选)</span></label>
+          <input type="text" id="txt-system" placeholder="你是一个有帮助的助手" />
+          <label>消息</label>
+          <textarea id="txt-msg" rows="3" placeholder="输入内容..."></textarea>
+          <button class="btn-primary" onclick="submitText()">发送</button>
+          <div id="txt-output" class="output-box"></div>
+        </div>
+      </section>
+
+      <!-- Image -->
+      <section id="tab-image" class="tab-content">
+        <div class="card">
+          <div class="row">
+            <label><input type="radio" name="img-mode" value="t2i" checked onchange="toggleImgMode()" /> 文生图</label>
+            <label><input type="radio" name="img-mode" value="i2i" onchange="toggleImgMode()" /> 图生图</label>
+          </div>
+          <div id="img-i2i-area" style="display:none">
+            <label>参考图片</label>
+            <input type="file" id="img-source" accept="image/*" />
+            <img id="img-source-preview" style="max-width:200px;display:none;margin:8px 0;border-radius:8px" />
+          </div>
+          <label>画面描述</label>
+          <input type="text" id="img-prompt" placeholder="一只猫在太空站里喝咖啡" />
+          <div class="row">
+            <label>数量</label>
+            <input type="range" id="img-n" min="1" max="4" value="1" />
+            <span id="img-n-val">1</span>
+          </div>
+          <div class="row">
+            <label>比例</label>
+            <select id="img-ratio">
+              <option value="1:1">1:1 (正方形)</option>
+              <option value="16:9">16:9 (横屏)</option>
+              <option value="9:16">9:16 (竖屏)</option>
+              <option value="4:3">4:3</option>
+              <option value="3:4">3:4</option>
+              <option value="3:2">3:2</option>
+              <option value="2:3">2:3</option>
+              <option value="21:9">21:9 (超宽)</option>
+            </select>
+          </div>
+          <div class="row">
+            <label><input type="checkbox" id="img-custom-size" onchange="toggleCustomSize()" /> 自定义尺寸</label>
+          </div>
+          <div id="img-size-area" style="display:none" class="row">
+            <label>宽</label><input type="number" id="img-width" min="512" max="2048" step="8" value="1024" style="width:80px" />
+            <label>高</label><input type="number" id="img-height" min="512" max="2048" step="8" value="1024" style="width:80px" />
+            <span class="hint">512-2048，8 的倍数</span>
+          </div>
+          <div class="row">
+            <label><input type="checkbox" id="img-prompt-opt" /> AI 优化提示词</label>
+          </div>
+          <div class="row" id="img-seed-row" style="display:none">
+            <label>种子 <span class="hint">(相同种子+提示词=相同结果)</span></label>
+            <input type="number" id="img-seed" min="0" max="999999" placeholder="随机" style="width:100px" />
+          </div>
+          <button class="btn-primary" onclick="submitImage()">生成图片</button>
+          <div id="img-output" class="gallery">
+            <div class="gallery-empty">
+              <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1"/><circle cx="8.5" cy="8.5" r="1.5" stroke-width="1"/><path d="M21 15l-5-5L5 21" stroke-width="1"/></svg>
+              <p>输入描述，生成图片</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vision -->
+      <section id="tab-vision" class="tab-content">
+        <div class="card">
+          <label>上传图片</label>
+          <input type="file" id="vis-file" accept="image/*" />
+          <button class="btn-primary" onclick="submitVision()">分析图片</button>
+          <div id="vis-output" class="output-box"></div>
+        </div>
+      </section>
+
+      <!-- Speech -->
+      <section id="tab-speech" class="tab-content">
+        <div class="card">
+          <label>文本</label>
+          <textarea id="sp-text" rows="4" placeholder="输入要朗读的文字..."></textarea>
+          <div class="row">
+            <label>音色</label>
+            <select id="sp-voice">
+              <option value="female-yujie">御姐</option>
+              <option value="female-shaonv">少女</option>
+              <option value="female-chengshu">成熟女</option>
+              <option value="female-tianmei">甜美</option>
+              <option value="male-qn-qingse">青涩男</option>
+              <option value="male-qn-jingying">精英男</option>
+              <option value="male-qn-badao">霸道男</option>
+              <option value="male-qn-daxuesheng">大学生男</option>
+              <option value="clever_boy">聪明男孩</option>
+              <option value="cute_boy">可爱男孩</option>
+              <option value="lovely_girl">可爱女孩</option>
+              <option value="junlang_nanyou">俊朗男友</option>
+              <option value="tianxin_xiaoling">甜心小玲</option>
+              <option value="qiaopi_mengmei">俏皮萌妹</option>
+              <option value="wumei_yujie">妩媚御姐</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>或自定义 ID</label>
+            <input type="text" id="sp-custom-voice" placeholder="克隆的 voice_id" style="flex:1" />
+          </div>
+          <div class="row">
+            <label>语速</label>
+            <input type="range" id="sp-speed" min="0.5" max="2" step="0.1" value="1" />
+            <span id="sp-speed-val">1.0</span>
+            <label>音量</label>
+            <input type="range" id="sp-volume" min="0.1" max="3" step="0.1" value="1" />
+            <span id="sp-volume-val">1.0</span>
+          </div>
+          <div class="row">
+            <label>语调</label>
+            <input type="range" id="sp-pitch" min="-12" max="12" step="1" value="0" />
+            <span id="sp-pitch-val">0</span>
+          </div>
+          <button class="btn-primary" onclick="submitSpeech()">合成语音</button>
+          <div id="sp-output"></div>
+          <div style="margin-top:32px;padding-top:24px;border-top:0.5px solid var(--border)">
+            <h2 style="font-size:14px;font-weight:500;margin-bottom:12px">🎙️ 语音克隆</h2>
+            <p class="hint" style="margin-bottom:12px">上传一段 10-60 秒的清晰人声，克隆后可在合成语音中使用</p>
+            <label>语音 ID（5-32 字符，英文数字下划线）</label>
+            <input type="text" id="clone-voice-id" placeholder="my_voice_01" style="margin-bottom:8px" />
+            <div class="row">
+              <label><input type="radio" name="clone-src" value="file" checked onchange="toggleCloneSrc()" /> 上传文件</label>
+              <label><input type="radio" name="clone-src" value="record" onchange="toggleCloneSrc()" /> 录音</label>
+            </div>
+            <div id="clone-file-area"><input type="file" id="clone-file" accept="audio/*" /></div>
+            <div id="clone-record-area" style="display:none">
+              <div id="clone-rec-area"><button class="btn-rec" id="clone-rec-btn" onclick="toggleRecording('clone')"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button><span id="clone-rec-status" class="hint"></span></div>
+              <audio id="clone-rec-preview" controls style="display:none;width:100%;margin-top:8px"></audio>
+            </div>
+            <button class="btn-primary" onclick="submitVoiceClone()">克隆声音</button>
+            <div id="clone-output"></div>
+            <p class="hint" style="margin-top:8px;color:var(--text-muted)">⚠️ 语音克隆仅支持 Max 或企业版套餐</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Music (merged: generate + cover + voice) -->
+      <section id="tab-music" class="tab-content">
+        <div class="card">
+          <div class="row" style="margin-bottom:16px">
+            <label><input type="radio" name="mu-mode" value="generate" checked onchange="toggleMusicMode()" /> 🎼 生成音乐</label>
+            <label><input type="radio" name="mu-mode" value="cover" onchange="toggleMusicMode()" /> 🎤 音频翻唱</label>
+            <label><input type="radio" name="mu-mode" value="voice" onchange="toggleMusicMode()" /> 🎙️ 录音创作</label>
+          </div>
+
+          <!-- Mode: Generate -->
+          <div id="mu-generate-area">
+            <label>风格描述</label>
+            <input type="text" id="mu-prompt" value="轻快的电子流行音乐" />
+            <label>歌词</label>
+            <textarea id="mu-lyrics" rows="4" placeholder="[verse] 歌词...&#10;[chorus] 副歌..."></textarea>
+            <label>人声描述 <span class="hint">(可选)</span></label>
+            <input type="text" id="mu-vocals" placeholder="温暖男声 / 明亮女高音" />
+            <div class="row">
+              <label><input type="checkbox" id="mu-inst" /> 纯音乐</label>
+              <label><input type="checkbox" id="mu-ai-lyrics" /> AI 自动写歌词</label>
+            </div>
+            <button class="btn-primary" onclick="submitMusicGenerate()">生成音乐</button>
+          </div>
+
+          <!-- Mode: Cover -->
+          <div id="mu-cover-area" style="display:none">
+            <label>目标风格</label>
+            <input type="text" id="mu-cover-style" value="硬摇滚，电吉他强力和弦，有力鼓点" />
+            <div class="row">
+              <label><input type="radio" name="mu-cover-src" value="file" checked onchange="toggleMusicCoverSrc()" /> 上传文件</label>
+              <label><input type="radio" name="mu-cover-src" value="record" onchange="toggleMusicCoverSrc()" /> 录音</label>
+            </div>
+            <div id="mu-cover-file-area"><label>上传音频</label><input type="file" id="mu-cover-file" accept="audio/*" /></div>
+            <div id="mu-cover-rec-area" style="display:none">
+              <button class="btn-primary" id="mu-rec-btn" onclick="toggleRecording('mu')">🎙️ 开始录音</button>
+              <span id="mu-rec-status" class="hint"></span>
+              <audio id="mu-rec-preview" controls style="display:none;width:100%;margin-top:8px"></audio>
+            </div>
+            <button class="btn-primary" onclick="submitMusicCover()">翻唱</button>
+          </div>
+
+          <!-- Mode: Voice -->
+          <div id="mu-voice-area" style="display:none">
+            <div class="row">
+              <label><input type="radio" name="mu-voice-mode" value="cover" checked /> 录音翻唱 — 录一段，换风格</label>
+              <label><input type="radio" name="mu-voice-mode" value="music" /> 录音作曲 — 根据旋律生成歌曲</label>
+            </div>
+            <div id="mu-voice-rec-area"><button class="btn-rec" id="mu-voice-rec-btn" onclick="toggleRecording('mu-voice')"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button><span id="mu-voice-rec-status" class="hint"></span></div>
+            <audio id="mu-voice-rec-preview" controls style="display:none;width:100%;margin:8px 0"></audio>
+            <div id="mu-voice-cover-opts">
+              <label>翻唱风格</label>
+              <input type="text" id="mu-voice-cover-style" value="流行歌曲，专业制作，清晰人声" />
+            </div>
+            <div id="mu-voice-music-opts" style="display:none">
+              <label>歌曲风格描述</label>
+              <input type="text" id="mu-voice-desc" value="根据录音旋律，生成一首完整的流行歌曲" />
+              <label>歌词 <span class="hint">(可选)</span></label>
+              <textarea id="mu-voice-lyrics" rows="3" placeholder="[verse] ...&#10;[chorus] ..."></textarea>
+            </div>
+            <button class="btn-primary" id="mu-voice-submit" onclick="submitMusicVoice()" disabled>请先录音</button>
+          </div>
+
+          <div id="mu-output"></div>
+        </div>
+      </section>
+
+      <!-- Tasks -->
+      <section id="tab-tasks" class="tab-content">
+        <div class="card">
+          <h2>📋 任务队列</h2>
+          <div id="tasks-list"></div>
+          <button class="btn-secondary" onclick="clearTasks()">🗑️ 清除已完成</button>
+        </div>
+      </section>
+
+      <!-- Gallery -->
+      <section id="tab-gallery" class="tab-content">
+        <div class="card">
+          <h2>📁 生成结果</h2>
+          <p class="hint">文件保存在 ~/Desktop/mmx_outputs/</p>
+          <div id="gallery-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Powered by MiniMax Token Plan</span>
+      <span class="version" id="version"></span>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    console.log('[init] starting...');
+    import('./main.js').then(() => {
+      console.log('[init] main.js loaded successfully');
+    }).catch(err => {
+      console.error('[init] failed to load main.js:', err);
+      document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">加载失败: ' + err.message + '</div>';
+    });
+  </script>
+</body>
+</html>

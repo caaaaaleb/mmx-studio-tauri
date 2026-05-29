@@ -1,0 +1,8 @@
+node_modules/
+dist/
+src-tauri/target/
+.venv/
+.DS_Store
+*.log
+
+src-tauri/binaries/
