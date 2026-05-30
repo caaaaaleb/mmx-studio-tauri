@@ -43,6 +43,14 @@ fn find_ffmpeg() -> String {
 }
 
 fn find_mmx() -> Result<String, String> {
+    // Priority 1: Bundled sidecar (shipped with app, guaranteed to work)
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            let sidecar = dir.join("mmx");
+            if sidecar.exists() { return Ok(sidecar.to_string_lossy().to_string()); }
+        }
+    }
+    // Priority 2: System-installed mmx (fallback for dev environments)
     let paths = [
         "/usr/local/bin/mmx",
         "/opt/homebrew/bin/mmx",
@@ -51,13 +59,6 @@ fn find_mmx() -> Result<String, String> {
     for p in &paths {
         if std::path::Path::new(p).exists() {
             return Ok(p.to_string());
-        }
-    }
-    // Check sidecar (bundled with app)
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            let sidecar = dir.join("mmx");
-            if sidecar.exists() { return Ok(sidecar.to_string_lossy().to_string()); }
         }
     }
     Err("mmx CLI 未安装。请运行: npm install -g mmx-cli".to_string())
